@@ -33,6 +33,9 @@ function sendMessage() {
         botMessageDiv.appendChild(botMessageContent);
         chatWindow.appendChild(botMessageDiv);
 
+        // Show alert with the response
+        alert(`Response from server: ${data.response}`);
+
         document.getElementById('user-input').value = '';
         chatWindow.scrollTop = chatWindow.scrollHeight;
     })

@@ -51,12 +51,12 @@ def get_response(user_message, greeted):
     
     # Define keywords and their corresponding responses
     keywords = {
-        "admissions": ["eligibility", "process", "dates", "exams"],
-        "programs": ["undergraduate", "postgraduate", "diploma", "research"],
-        "fees": ["structure", "payment", "scholarships", "refund"],
-        "facilities": ["library", "hostel", "sports", "transport"],
-        "placements": ["statistics", "recruiters", "internships", "alumni"],
-        "contact": ["department", "general", "social"]
+        "admissions": ["eligibility", "process", "dates", "exams", "all"],
+        "programs": ["undergraduate", "postgraduate", "diploma", "research", "all"],
+        "fees": ["structure", "payment", "scholarships", "refund", "all"],
+        "facilities": ["library", "hostel", "sports", "transport", "all"],
+        "placements": ["statistics", "recruiters", "internships", "alumni", "all"],
+        "contact": ["department", "general", "social", "all"],
     }
     
     # Split the user message into words
@@ -69,23 +69,27 @@ def get_response(user_message, greeted):
             for sub_keyword in sub_keywords:
                 cursor.execute("SELECT response FROM responses WHERE keyword LIKE ?", (f"%{category} {sub_keyword}%",))
                 result = cursor.fetchone()
-                if result:
-                    responses.append(f"{sub_keyword.capitalize()}: {result[0]}")
+                if result and result[0] not in responses:
+                    responses.append(result[0])
             if responses:
                 conn.close()
                 return "\n".join(responses), greeted
-            cursor.execute("SELECT response FROM responses WHERE keyword LIKE ?", (f"%{category}%",))
-            result = cursor.fetchone()
-            if result:
+            # If no subcategory is specified, return all data in the category
+            for sub_keyword in sub_keywords:
+                cursor.execute("SELECT response FROM responses WHERE keyword LIKE ?", (f"%{category} {sub_keyword}%",))
+                result = cursor.fetchone()
+                if result and result[0] not in responses:
+                    responses.append(result[0])
+            if responses:
                 conn.close()
-                return result[0], greeted
+                return "\n".join(responses), greeted
     
     # Try to find a response for each word in the user message
     responses = []
     for word in words:
         cursor.execute("SELECT response FROM responses WHERE keyword LIKE ?", (f"%{word}%",))
         result = cursor.fetchone()
-        if result:
+        if result and result[0] not in responses:
             responses.append(result[0])
     if responses:
         conn.close()
