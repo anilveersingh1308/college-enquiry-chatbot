@@ -5,15 +5,45 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat with Us</title>
     <link rel="stylesheet" href="/static/css/styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
     <div class="chat-container">
-        <div class="chat-window" id="chat-window"></div>
+        <h1>Chat with Us</h1>
+        <div class="chat-box" id="chat-box"></div>
         <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Type your question...">
+            <input type="text" id="user-input" placeholder="Type your message here...">
             <button onclick="sendMessage()">Send</button>
         </div>
     </div>
-    <script src="/static/js/script.js"></script>
+    <script>
+        var socket = io();
+
+        function sendMessage() {
+            var userInput = $('#user-input').val();
+            if (userInput.trim() === '') return;
+            $('#chat-box').append('<div class="user-message"><div>' + userInput + '</div></div>');
+            $('#user-input').val('');
+            socket.emit('user_message', { message: userInput });
+            scrollToBottom();
+        }
+
+        $('#user-input').keypress(function(event) {
+            if (event.which === 13) {
+                sendMessage();
+            }
+        });
+
+        socket.on('bot_response', function(data) {
+            $('#chat-box').append('<div class="bot-message"><div>' + data.response + '</div></div>');
+            scrollToBottom();
+        });
+
+        function scrollToBottom() {
+            var chatBox = document.getElementById('chat-box');
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+    </script>
 </body>
 </html>
